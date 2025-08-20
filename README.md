@@ -43,10 +43,17 @@ python3 audio_processor.py path/to/folder --force
 python3 audio_processor.py . --force
 ```
 
+### Check for M8 path length issues
+```bash
+# Check if any paths would exceed M8's 128 character limit
+python3 audio_processor.py path/to/folder --check-paths
+```
+
 ## Features
 
 - **Batch processing** of entire directory trees
 - **Two-phase processing**: Renames directories first, then processes files in place
+- **M8 path length checking** - validates paths against M8's 128 character limit
 - **Dry-run mode** to preview changes before applying
 - **Detailed logging** of all operations
 - **Format detection** - only converts files that need it
@@ -96,6 +103,17 @@ python3 audio_processor.py drums --force
 python3 audio_processor.py drums/kicks --force
 python3 audio_processor.py drums/snares --force
 python3 audio_processor.py drums/hats --force
+```
+
+### Check path lengths before processing
+```bash
+# Ensure your sample library will work on M8 (128 char limit)
+python3 audio_processor.py my_samples --check-paths
+
+# Example output:
+# ⚠️  WARNING: Path length 141 chars (exceeds M8 limit of 128):
+# Original: some/very/deep/nested/folder/structure/with/long/names/sample.wav
+# After processing: some/very/deep/nested/folder/structure/with/long/names/sample.wav
 ```
 
 ## Output
