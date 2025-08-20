@@ -1,4 +1,4 @@
-# Audio Sample Processor
+# M8 Sample Processor
 
 A Python script to batch process audio samples for standardization. Originally created for the Dirtywave M8 tracker, but perfect for any hardware sampler, DAW, or audio library that needs consistent 44.1kHz 16-bit WAV files with clean naming.
 
