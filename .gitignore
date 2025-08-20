@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+
+# Logs
+*.log
+processing_log.txt
+
+# Audio files (if you don't want to commit samples)
+# *.wav
+# *.aif
+# *.aiff
+# *.mp3
+# *.flac
+
+# Temp files
+*.tmp
+*.temp
+_tmp_*
+
+# Backup folders
+*_backup/
+*_test_backup/
