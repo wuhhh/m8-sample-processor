@@ -289,10 +289,10 @@ def main():
     if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
         target_folder = sys.argv[1]
     else:
-        print("Usage: python3 test_folder_process.py <folder_path> [--dry-run]")
+        print("Usage: m8-sample-processor <folder_path> [--dry-run|--force]")
         print("\nExample:")
-        print("  python3 test_folder_process.py nz/bluent --dry-run")
-        print("  python3 test_folder_process.py nz/bluent")
+        print("  m8-sample-processor ./samples --dry-run")
+        print("  m8-sample-processor ./samples --force")
         sys.exit(1)
     
     # Resolve paths
