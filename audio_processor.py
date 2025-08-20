@@ -110,6 +110,8 @@ def process_files(root_path, base_path, log_file, dry_run=False):
     renamed = 0
     converted = 0
     failed = 0
+    path_warnings = []  # Track files with long paths
+    PATH_WARNING_LIMIT = 100  # M8 has 128 char limit, warn at 100
     
     for i, old_path in enumerate(audio_files, 1):
         if not old_path.exists():
@@ -153,12 +155,29 @@ def process_files(root_path, base_path, log_file, dry_run=False):
         except:
             rel_old = old_path.name
         
+        # Check final path length for M8 compatibility
+        final_path_length = 0
+        try:
+            rel_final = final_path.relative_to(base_path)
+            final_path_length = len(str(rel_final))
+            if final_path_length > PATH_WARNING_LIMIT:
+                path_warnings.append((str(rel_final), final_path_length))
+        except:
+            pass  # Can't get relative path, skip warning
+        
         # Skip if nothing to do
         if not needs_rename and not needs_conversion:
             continue  # Skip this file
         
-        print(f"  [{i}/{total}] {rel_old}")
+        # Show path length warning if needed
+        path_warning = ""
+        if final_path_length > PATH_WARNING_LIMIT:
+            path_warning = f" ⚠️  PATH TOO LONG: {final_path_length} chars"
+        
+        print(f"  [{i}/{total}] {rel_old}{path_warning}")
         log_file.write(f"[{i}/{total}] Processing: {rel_old}\n")
+        if path_warning:
+            log_file.write(f"  WARNING: Path length {final_path_length} exceeds M8 limit\n")
         
         if dry_run:
             if needs_rename or needs_conversion:
@@ -262,11 +281,26 @@ def process_files(root_path, base_path, log_file, dry_run=False):
     if failed > 0:
         print(f"  Failed: {failed}")
     
+    # Show path length warnings
+    if path_warnings:
+        print(f"\n  ⚠️  M8 PATH LENGTH WARNINGS ({len(path_warnings)} files exceed {PATH_WARNING_LIMIT} chars):")
+        print(f"  The M8 has a maximum path length of 128 characters.")
+        print(f"  These files may not load properly on the M8:\n")
+        for path, length in sorted(path_warnings, key=lambda x: -x[1])[:10]:  # Show top 10 longest
+            print(f"    {length} chars: {path}")
+        if len(path_warnings) > 10:
+            print(f"    ... and {len(path_warnings) - 10} more")
+        
+        log_file.write(f"\nM8 Path Length Warnings:\n")
+        for path, length in sorted(path_warnings, key=lambda x: -x[1]):
+            log_file.write(f"  {length} chars: {path}\n")
+    
     log_file.write(f"\nSummary:\n")
     log_file.write(f"  Processed: {processed}/{total}\n")
     log_file.write(f"  Converted: {converted}\n")
     log_file.write(f"  Renamed: {renamed}\n")
     log_file.write(f"  Failed: {failed}\n")
+    log_file.write(f"  Path warnings: {len(path_warnings)}\n")
     
     return processed, failed
 
