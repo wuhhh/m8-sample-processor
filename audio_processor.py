@@ -11,6 +11,49 @@ def sanitize_name(name):
     """Convert to lowercase and replace spaces with underscores"""
     return name.lower().replace(' ', '_')
 
+def check_path_lengths(root_path):
+    """Check all audio files for M8 path length issues"""
+    PATH_WARNING_LIMIT = 100
+    path_warnings = []
+    total_files = 0
+    
+    print("\nScanning for files with paths exceeding 100 characters...")
+    print("(M8 has a maximum path length of 128 characters)\n")
+    
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        dir_path = Path(dirpath)
+        for filename in filenames:
+            if filename.lower().endswith(('.wav', '.aif', '.aiff', '.mp3', '.flac')):
+                total_files += 1
+                file_path = dir_path / filename
+                
+                # Sanitize the path as it would be after processing
+                rel_path = file_path.relative_to(root_path)
+                path_parts = [sanitize_name(part) for part in rel_path.parts[:-1]]
+                sanitized_filename = sanitize_name(file_path.stem) + '.wav'
+                path_parts.append(sanitized_filename)
+                
+                final_path = '/'.join(path_parts)
+                path_length = len(final_path)
+                
+                if path_length > PATH_WARNING_LIMIT:
+                    path_warnings.append((final_path, path_length, str(rel_path)))
+    
+    print(f"Scanned {total_files} audio files\n")
+    
+    if path_warnings:
+        print(f"⚠️  FOUND {len(path_warnings)} FILES WITH LONG PATHS:\n")
+        for final_path, length, original in sorted(path_warnings, key=lambda x: -x[1]):
+            print(f"  {length} chars: {original}")
+            print(f"           → {final_path}\n")
+        
+        print(f"\nThese files may not load properly on the M8 after processing.")
+        print(f"Consider moving them to shorter directory paths.")
+    else:
+        print("✓ All file paths are within the M8's 128 character limit!")
+    
+    return len(path_warnings)
+
 def rename_directories(root_path, log_file, dry_run=False):
     """Rename all directories to lowercase with underscores, bottom-up"""
     print("\nPhase 1: Renaming directories...")
@@ -318,15 +361,21 @@ def main():
     # Parse arguments
     dry_run = '--dry-run' in sys.argv
     force = '--force' in sys.argv
+    check_paths_only = '--check-paths' in sys.argv
     
     # Get target folder from arguments or use current directory
     if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
         target_folder = sys.argv[1]
     else:
-        print("Usage: m8-sample-processor <folder_path> [--dry-run|--force]")
-        print("\nExample:")
+        print("Usage: m8-sample-processor <folder_path> [--dry-run|--force|--check-paths]")
+        print("\nOptions:")
+        print("  --dry-run     Preview changes without modifying files")
+        print("  --force       Apply changes without confirmation")
+        print("  --check-paths Only check for M8 path length issues (>100 chars)")
+        print("\nExamples:")
         print("  m8-sample-processor ./samples --dry-run")
         print("  m8-sample-processor ./samples --force")
+        print("  m8-sample-processor ./samples --check-paths")
         sys.exit(1)
     
     # Resolve paths
@@ -346,7 +395,9 @@ def main():
     log_path = target_path / 'processing_log.txt'
     
     print("=" * 60)
-    if dry_run:
+    if check_paths_only:
+        print("PATH CHECK MODE - Scanning for M8 path length issues")
+    elif dry_run:
         print("DRY RUN MODE - No changes will be made")
     else:
         print("Audio Processing Script - Single Folder Test")
@@ -362,6 +413,13 @@ def main():
                 audio_count += 1
     
     print(f"Audio files found: {audio_count}")
+    
+    # If only checking paths, do that and exit
+    if check_paths_only:
+        print("\n" + "=" * 60)
+        warnings = check_path_lengths(target_path)
+        print("\n" + "=" * 60)
+        sys.exit(0 if warnings == 0 else 1)
     
     if not dry_run and not force:
         print("\n" + "!" * 60)
