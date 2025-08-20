@@ -35,12 +35,12 @@ python3 audio_processor.py path/to/folder --dry-run
 
 ### Process files (destructive operation)
 ```bash
-python3 audio_processor.py path/to/folder --force
+python3 audio_processor.py path/to/folder
 ```
 
 ### Process entire directory tree
 ```bash
-python3 audio_processor.py . --force
+python3 audio_processor.py .
 ```
 
 ### Check for M8 path length issues
@@ -94,15 +94,15 @@ python3 audio_processor.py my_samples --dry-run
 ### Process a sample library
 ```bash
 # Convert all samples in a drum library
-python3 audio_processor.py drums --force
+python3 audio_processor.py drums
 ```
 
 ### Process multiple folders
 ```bash
 # Process each folder separately for better control
-python3 audio_processor.py drums/kicks --force
-python3 audio_processor.py drums/snares --force
-python3 audio_processor.py drums/hats --force
+python3 audio_processor.py drums/kicks
+python3 audio_processor.py drums/snares
+python3 audio_processor.py drums/hats
 ```
 
 ### Check path lengths before processing
